@@ -14,6 +14,15 @@ checks:
 coding_style:
     php: {  }
 
+build:
+    tests:
+        override:
+            -
+                command: 'vendor/bin/phpunit --coverage-clover=clover.xml'
+                coverage:
+                    file: 'clover.xml'
+                    format: 'clover'
+
 tools:
     external_code_coverage: true
     php_code_coverage: true
