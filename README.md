@@ -22,8 +22,8 @@ use Symfony\Component\Config\FileLocator;
 
 $factory = new FactoryContainer(YamlFileLoader::class, new FileLocator);
 
-$configs = [__DIR__ . '/container.yml'];
-$fileCache = __DIR__ .'/../cache/container.cache.php';
+$configs = ['./container.yml'];
+$fileCache = './../cache/container.cache.php';
 
 $loader = new LoaderContainer($configs, $fileCache, $factory);
 $container = $loader->getContainer();
