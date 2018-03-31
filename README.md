@@ -9,7 +9,7 @@
 Simple loader for symfony [DependencyInjection component]( https://symfony.com/doc/current/components/dependency_injection.html)
 
 ### Install
-`composer require alexpts/php-symfony-di-loader`
+`composer require alexpts/symfony-di-loader`
 
 
 ### Demo
