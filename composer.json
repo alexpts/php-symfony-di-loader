@@ -1,0 +1,33 @@
+{
+    "name": "alexpts/symfony-di-loader",
+    "description": "Simple loader for symfony DI container",
+    "homepage": "https://github.com/alexpts/php-symfony-di-loader",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "DI",
+        "Symfony",
+        "Factory"
+    ],
+    "authors": [{
+        "name": "Alexpts",
+        "email": "alexpts3@gmail.com"
+    }],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">7.2",
+        "symfony/dependency-injection": "^4.0",
+        "symfony/yaml": "^4.0",
+        "symfony/config": "^4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "PTS\\SymfonyDiLoader": "src"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.0",
+        "codeclimate/php-test-reporter": "^0.4.4",
+        "mikey179/vfsStream": "^1.6"
+    }
+}
