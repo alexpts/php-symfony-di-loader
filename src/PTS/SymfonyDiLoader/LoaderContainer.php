@@ -76,8 +76,7 @@ class LoaderContainer implements LoaderContainerInterface
 
         if (!($appContainer instanceof ContainerInterface)) {
             $appContainer = $this->getFactory()->create($this->configFiles);
-            $appContainer->compile(true);
-            $this->flushContainerToFile($this->cacheFile, $this->classContainer, $appContainer);
+            $this->dump($this->cacheFile, $this->classContainer, $appContainer);
         }
 
         return $appContainer;
@@ -90,8 +89,9 @@ class LoaderContainer implements LoaderContainerInterface
      *
      * @throws EnvParameterException
      */
-    protected function flushContainerToFile(string $filePath, string $className, ContainerBuilder $container): void
+    protected function dump(string $filePath, string $className, ContainerBuilder $container): void
     {
+        $container->compile(true);
         $dumper = new PhpDumper($container);
         file_put_contents($filePath, $dumper->dump([
             'class' => $className,

@@ -201,12 +201,12 @@ class LoaderContainerTest extends TestCase
 
         /** @var MockObject|LoaderContainer $loader */
         $loader = $this->getMockBuilder(LoaderContainer::class)
-            ->setMethods(['getContainerFromCache', 'flushContainerToFile', 'getFactory'])
+            ->setMethods(['getContainerFromCache', 'dump', 'getFactory'])
             ->setConstructorArgs([$arg1, $arg2, $arg3])
             ->getMock();
         $loader->expects(self::once())->method('getContainerFromCache')->with($arg2, $arg1)->willReturn($container);
         $loader->expects(self::never())->method('getFactory');
-        $loader->expects(self::never())->method('flushContainerToFile');
+        $loader->expects(self::never())->method('dump');
 
         $createContainer = new \ReflectionMethod(LoaderContainer::class, 'createContainer');
         $createContainer->setAccessible(true);
@@ -234,12 +234,12 @@ class LoaderContainerTest extends TestCase
 
         /** @var MockObject|LoaderContainer $loader */
         $loader = $this->getMockBuilder(LoaderContainer::class)
-            ->setMethods(['getContainerFromCache', 'flushContainerToFile', 'getFactory'])
+            ->setMethods(['getContainerFromCache', 'dump', 'getFactory'])
             ->setConstructorArgs([$arg1, $arg2, $arg3])
             ->getMock();
         $loader->expects(self::once())->method('getContainerFromCache')->with($arg2, $arg1)->willReturn(null);
         $loader->expects(self::once())->method('getFactory')->willReturn($factory);
-        $loader->expects(self::once())->method('flushContainerToFile')->willReturn($arg2);
+        $loader->expects(self::once())->method('dump')->willReturn($arg2);
 
         $createContainer = new \ReflectionMethod(LoaderContainer::class, 'createContainer');
         $createContainer->setAccessible(true);
@@ -251,19 +251,18 @@ class LoaderContainerTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testFlushContainerToFile(): void
+    public function testDump(): void
     {
         $root = vfsStream::setup('/temp');
         $filePath = vfsStream::newFile('cache.php')->at($root)->url();
 
         $className = 'AppContainer';
         $container = new ContainerBuilder;
-        $container->compile();
 
         $loader = $this->createMock(LoaderContainer::class);
-        $flushContainerToFile = new \ReflectionMethod(LoaderContainer::class, 'flushContainerToFile');
-        $flushContainerToFile->setAccessible(true);
-        $flushContainerToFile->invoke($loader, $filePath, $className, $container);
+        $dump = new \ReflectionMethod(LoaderContainer::class, 'dump');
+        $dump->setAccessible(true);
+        $dump->invoke($loader, $filePath, $className, $container);
 
         $fileContent = file_get_contents($filePath);
         self::assertTrue((bool)\strlen($fileContent));
