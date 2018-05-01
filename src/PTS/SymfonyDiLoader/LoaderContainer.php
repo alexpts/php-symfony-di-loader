@@ -28,7 +28,7 @@ class LoaderContainer implements LoaderContainerInterface
     protected $classContainer = 'AppContainer';
 
 
-    public function __construct(array $configFiles = [], string $cacheFile, FactoryContainer $factory)
+    public function __construct(array $configFiles, string $cacheFile, FactoryContainer $factory)
     {
         $this->configFiles = $configFiles;
         $this->cacheFile = $cacheFile;
