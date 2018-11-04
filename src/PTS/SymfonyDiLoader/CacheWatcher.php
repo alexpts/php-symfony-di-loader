@@ -5,13 +5,13 @@ namespace PTS\SymfonyDiLoader;
 
 class CacheWatcher
 {
-   	/**
+	/**
 	 * @param string $fileCache
 	 * @param string[] $configs
 	 *
 	 * @return bool
 	 */
-    public function isActualCache(string $fileCache, array $configs): bool
+	public function isActualCache(string $fileCache, array $configs): bool
 	{
 		$oldConfigs = $this->getMetaCache($fileCache . '.meta');
 		if (\count($oldConfigs) !== \count($configs)) {
@@ -41,22 +41,22 @@ class CacheWatcher
 		return unserialize($configs);
 	}
 
-    /**
-     * @param string $fileCache
-     * @param string[] $configs
-     *
-     * @return bool
-     */
-    public function isExpired(string $fileCache, array $configs): bool
-    {
-        $cacheTime = filemtime($fileCache);
+	/**
+	 * @param string $fileCache
+	 * @param string[] $configs
+	 *
+	 * @return bool
+	 */
+	public function isExpired(string $fileCache, array $configs): bool
+	{
+		$cacheTime = filemtime($fileCache);
 
-        foreach ($configs as $config) {
-            if ($cacheTime < filemtime($config)) {
-                return true;
-            }
-        }
+		foreach ($configs as $config) {
+			if ($cacheTime < filemtime($config)) {
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 }

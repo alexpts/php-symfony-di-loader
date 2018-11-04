@@ -7,5 +7,5 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 interface LoaderContainerInterface
 {
-    public function getContainer(): ContainerInterface;
+	public function getContainer(): ContainerInterface;
 }
