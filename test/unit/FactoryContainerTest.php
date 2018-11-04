@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PTS\SymfonyDiLoader;
+namespace PTS\SymfonyDiLoader\Unit;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PTS\SymfonyDiLoader\FactoryContainer;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;

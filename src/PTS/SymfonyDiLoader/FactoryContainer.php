@@ -21,7 +21,7 @@ class FactoryContainer
     }
 
     /**
-     * @param array $configs
+     * @param string[] $configs
      *
      * @return ContainerBuilder
      * @throws \Exception
@@ -35,6 +35,7 @@ class FactoryContainer
             $loader->load($config);
         }
 
+		$builder->compile(true);
         return $builder;
     }
 
