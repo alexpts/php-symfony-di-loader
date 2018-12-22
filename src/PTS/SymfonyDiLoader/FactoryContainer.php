@@ -6,6 +6,7 @@ namespace PTS\SymfonyDiLoader;
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 class FactoryContainer
 {
@@ -22,13 +23,15 @@ class FactoryContainer
 
 	/**
 	 * @param string[] $configs
+	 * @param ExtensionInterface[] $extensions
 	 *
 	 * @return ContainerBuilder
 	 * @throws \Exception
 	 */
-	public function create(array $configs): ContainerBuilder
+	public function create(array $configs, array $extensions = []): ContainerBuilder
 	{
 		$builder = $this->createBuilder();
+		$this->registerExtensions($builder, $extensions);
 		$loader = $this->createLoader($builder, $this->locator);
 
 		foreach ($configs as $config) {
@@ -43,6 +46,13 @@ class FactoryContainer
 	{
 		return new ContainerBuilder;
 	}
+
+	protected function registerExtensions(ContainerBuilder $builder, array $extensions = []): void
+    {
+        array_map(function(ExtensionInterface $extension) use ($builder) {
+            $builder->registerExtension($extension);
+        }, $extensions);
+    }
 
 	protected function createLoader(ContainerBuilder $builder, FileLocatorInterface $locator): LoaderInterface
 	{

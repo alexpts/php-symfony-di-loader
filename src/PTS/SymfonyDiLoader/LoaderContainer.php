@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Exception\EnvParameterException;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class LoaderContainer implements LoaderContainerInterface
@@ -21,9 +22,11 @@ class LoaderContainer implements LoaderContainerInterface
 	protected $container;
 	/** @var CacheWatcher */
 	protected $cacheWatcher;
+	/** @var ExtensionInterface[] */
+	protected $extensions = [];
 
 	/** @var string */
-	protected $cacheFile;
+	protected $cacheFile = '';
 	/** @var bool */
 	protected $checkExpired = true;
 
@@ -43,6 +46,12 @@ class LoaderContainer implements LoaderContainerInterface
 		$this->cacheWatcher = new CacheWatcher;
 	}
 
+	public function addExtension(ExtensionInterface $extension): self
+    {
+        $this->extensions[] = $extension;
+        return $this;
+    }
+
 	public function setCheckExpired(bool $checkExpired = true): self
 	{
 		$this->checkExpired = $checkExpired;
@@ -56,30 +65,25 @@ class LoaderContainer implements LoaderContainerInterface
 	public function getContainer(): ContainerInterface
 	{
 		if ($this->container === null) {
-			$container = $this->tryGetContainerFromCache($this->cacheFile, $this->configFiles);
-			$container =
-				$container ?? $this->createContainer($this->configFiles, $this->cacheFile, $this->classContainer);
-			$this->container = $container;
+            $container = $this->tryGetContainerFromCache($this->cacheFile, $this->configFiles);
+            $this->container = $container ?? $this->generateContainer();
 		}
 
 		return $this->container;
 	}
 
-	/**
-	 * @param string[] $configs
-	 * @param string $cacheFile
-	 * @param string $class
-	 *
-	 * @return ContainerInterface
-	 * @throws \Exception
-	 */
-	protected function createContainer(array $configs, string $cacheFile, string $class): ContainerInterface
-	{
-		$appContainer = $this->factory->create($configs);
-		$this->dump($cacheFile, $class, $appContainer);
-		$this->dumpMeta($cacheFile . '.meta', $configs);
+	protected function generateContainer(): ContainerInterface
+    {
+        $container = $this->createContainer($this->configFiles, $this->extensions);
+        $this->dump($this->cacheFile, $this->classContainer, $container);
+        $this->dumpMeta($this->cacheFile . '.meta', $this->configFiles);
 
-		return $appContainer;
+        return $container;
+    }
+
+	protected function createContainer(array $configs, array $extensions = []): ContainerBuilder
+	{
+		return $this->factory->create($configs, $extensions);
 	}
 
 	/**

@@ -11,7 +11,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class ConstructorTest extends TestCase
 {
-
 	/**
 	 * @throws \ReflectionException
 	 */

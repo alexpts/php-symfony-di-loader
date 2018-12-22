@@ -40,6 +40,7 @@ class FactoryContainerTest extends TestCase
     {
         $factory = new FactoryContainer(YamlFileLoader::class, new FileLocator);
         $createBuilder = new \ReflectionMethod(FactoryContainer::class, 'createBuilder');
+
         $createBuilder->setAccessible(true);
         $actual = $createBuilder->invoke($factory);
 
@@ -73,6 +74,7 @@ class FactoryContainerTest extends TestCase
     {
         $locator = new FileLocator;
         $classLoader = YamlFileLoader::class;
+        $extensions = [new TestExtension];
 
         $loaderMock = $this->getMockBuilder(YamlFileLoader::class)
             ->disableOriginalConstructor()
@@ -87,7 +89,7 @@ class FactoryContainerTest extends TestCase
             ->getMock();
         $factory->expects(self::once())->method('createLoader')->willReturn($loaderMock);
 
-        $actual = $factory->create($configs);
+        $actual = $factory->create($configs, $extensions);
         self::assertInstanceOf(ContainerBuilder::class, $actual);
     }
 

@@ -6,46 +6,41 @@ namespace PTS\SymfonyDiLoader\Unit\LoaderContainer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\LoaderContainer;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class GetContainerTest extends TestCase
 {
-    /**
-	 * @param bool $fromCache
-	 *
-     * @throws \ReflectionException
-     * @throws \Exception
-	 *
-	 * @dataProvider dataProvider
-     */
-    public function testGetContainer(bool $fromCache): void
-    {
-    	/** @var ContainerInterface $container */
-        $container = $this->getMockForAbstractClass(ContainerInterface::class);
-
-		$cacheFile = '../../temp/cache.php';
-		$configs = ['a.yml', 'b.yml'];
-
-        /** @var MockObject|LoaderContainer $loader */
+	public function testGenerate(): void
+	{
+	    /** @var LoaderContainer|MockObject $loader */
         $loader = $this->getMockBuilder(LoaderContainer::class)
-            ->setConstructorArgs([$configs, $cacheFile])
-            ->setMethods(['createContainer', 'tryGetContainerFromCache'])
+            ->disableOriginalConstructor()
+            ->setMethods(['tryGetContainerFromCache', 'generateContainer'])
             ->getMock();
-		$loader->expects(self::once())->method('tryGetContainerFromCache')->willReturn($fromCache ? $container : null);
-        $loader->expects(self::exactly($fromCache ? 0 : 1))->method('createContainer')->willReturn($container);
+        $loader->expects(static::once())->method('generateContainer')
+            ->willReturn($this->createMock(ContainerBuilder::class));
+        $loader->expects(static::once())->method('tryGetContainerFromCache');
 
         $container = $loader->getContainer();
-        self::assertInstanceOf(ContainerInterface::class, $container);
-
-		$fromProcessMemory = $loader->getContainer();
-		self::assertInstanceOf(ContainerInterface::class, $fromProcessMemory);
-    }
-
-    public function dataProvider(): array
-	{
-		return [
-			'fromCache' => [true],
-			'create' => [false],
-		];
+        $container2 = $loader->getContainer();
+        static::assertInstanceOf(ContainerBuilder::class, $container);
+        static::assertInstanceOf(ContainerBuilder::class, $container2);
 	}
+
+    public function testCache(): void
+    {
+        /** @var LoaderContainer|MockObject $loader */
+        $loader = $this->getMockBuilder(LoaderContainer::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['tryGetContainerFromCache', 'generateContainer'])
+            ->getMock();
+        $loader->expects(static::never())->method('generateContainer');
+        $loader->expects(static::once())->method('tryGetContainerFromCache')
+            ->willReturn($this->createMock(ContainerBuilder::class));
+
+        $container = $loader->getContainer();
+        $container2 = $loader->getContainer();
+        static::assertInstanceOf(ContainerBuilder::class, $container);
+        static::assertInstanceOf(ContainerBuilder::class, $container2);
+    }
 }

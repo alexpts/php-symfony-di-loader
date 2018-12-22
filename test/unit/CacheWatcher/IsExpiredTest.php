@@ -54,20 +54,13 @@ class IsExpiredTest extends TestCase
 				? $cacheFilePath = $path
 				: $configs[] = $path;
 
-			// last modify time file minimal sec
-			\count($files) !== ++$i && $this->sleepToNextSec();
+            $mtime = time() + $i;
+            touch($path, $mtime);
         }
 
         $watcher = new CacheWatcher;
 		$actual = $watcher->isExpired($cacheFilePath, $configs);
         self::assertSame($expected, $actual);
-    }
-
-    protected function sleepToNextSec(): void
-    {
-        [$uSec] = explode(' ', microtime());
-        $waitTime = 1000000 - floor($uSec * 1000000);
-        usleep((int)$waitTime);
     }
 
     public function dataProviderIsExpired(): array
