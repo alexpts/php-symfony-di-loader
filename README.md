@@ -1,7 +1,7 @@
 # Symfony DI component loader
 
 [![Build Status](https://travis-ci.org/alexpts/php-symfony-di-loader.svg?branch=master)](https://travis-ci.org/alexpts/php-symfony-di-loader)
-[![Test Coverage](https://codeclimate.com/github/alexpts/php-symfony-di-loader/badges/coverage.svg)](https://codeclimate.com/github/alexpts/php-symfony-di-loader/coverage)
+[![Code Coverage](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/?branch=master)
 [![Code Climate](https://codeclimate.com/github/alexpts/php-symfony-di-loader/badges/gpa.svg)](https://codeclimate.com/github/alexpts/php-symfony-di-loader)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/?branch=master)
 
@@ -39,3 +39,11 @@ $loader->setCheckExpired(false);
 $container = $loader->getContainer();
 ```
 
+
+Custom container extension:
+```php
+$loader = new LoaderContainer($configs, $fileCache, $factory);
+$loader->addExtension($someContainerExtension);
+$loader->addExtension($someContainerExtension2);
+$container = $loader->getContainer();
+```
