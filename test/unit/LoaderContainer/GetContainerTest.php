@@ -15,7 +15,7 @@ class GetContainerTest extends TestCase
 	    /** @var LoaderContainer|MockObject $loader */
         $loader = $this->getMockBuilder(LoaderContainer::class)
             ->disableOriginalConstructor()
-            ->setMethods(['tryGetContainerFromCache', 'generateContainer'])
+            ->onlyMethods(['tryGetContainerFromCache', 'generateContainer'])
             ->getMock();
         $loader->expects(static::once())->method('generateContainer')
             ->willReturn($this->createMock(ContainerBuilder::class));
@@ -32,7 +32,7 @@ class GetContainerTest extends TestCase
         /** @var LoaderContainer|MockObject $loader */
         $loader = $this->getMockBuilder(LoaderContainer::class)
             ->disableOriginalConstructor()
-            ->setMethods(['tryGetContainerFromCache', 'generateContainer'])
+            ->onlyMethods(['tryGetContainerFromCache', 'generateContainer'])
             ->getMock();
         $loader->expects(static::never())->method('generateContainer');
         $loader->expects(static::once())->method('tryGetContainerFromCache')

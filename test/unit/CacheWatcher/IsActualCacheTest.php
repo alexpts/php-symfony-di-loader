@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader\Unit\CacheWatcher;
 
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\CacheWatcher;
@@ -17,16 +18,16 @@ class IsActualCacheTest extends TestCase
      * @param bool|null $isExpired
      *
      * @dataProvider dataProviderIsExpired
-     * @throws \Exception
+     * @throws Exception
      */
     public function testIsActualCache(bool $expected, array $configs, array $meta, bool $isExpired = null): void
     {
     	/** @var MockObject|CacheWatcher $watcher */
     	$watcher = $this->getMockBuilder(CacheWatcher::class)
-			->setMethods(['getMetaCache', 'isExpired'])
+			->onlyMethods(['getMetaCache', 'isExpired'])
 			->getMock();
 		$watcher->method('getMetaCache')->willReturn($meta);
-		$watcher->expects(self::exactly($isExpired === null ? 0 : 1))->method('isExpired')->willReturn($isExpired);
+		$watcher->expects(self::exactly($isExpired === null ? 0 : 1))->method('isExpired')->willReturn((bool)$isExpired);
 
 		$actual = $watcher->isActualCache('pathToFileCache', $configs);
         self::assertSame($expected, $actual);
@@ -39,16 +40,19 @@ class IsActualCacheTest extends TestCase
             	false,
 				['conf1.yml', 'new.yml'],
 				['conf1.yml'],
+                null
 			],
 			'different config count #2' => [
 				false,
 				['conf1.yml'],
 				['conf1.yml', 'conf2.yml'],
+                null
 			],
 			'different configs' => [
 				false,
 				['conf1.yml', 'conf3.yml'],
 				['conf1.yml', 'conf2.yml'],
+                null
 			],
 			'different order configs (fresh)' => [
 				true,

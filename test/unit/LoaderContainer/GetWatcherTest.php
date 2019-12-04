@@ -6,6 +6,7 @@ namespace PTS\SymfonyDiLoader\Unit\LoaderContainer;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\CacheWatcher;
 use PTS\SymfonyDiLoader\LoaderContainer;
+use ReflectionMethod;
 
 class GetWatcherTest extends TestCase
 {
@@ -19,7 +20,7 @@ class GetWatcherTest extends TestCase
 		$configs = ['a.yml', 'b.yml'];
 		$loader = new LoaderContainer($configs, $cacheFile);
 
-		$method = new \ReflectionMethod(LoaderContainer::class, 'getWatcher');
+		$method = new ReflectionMethod(LoaderContainer::class, 'getWatcher');
 		$method->setAccessible(true);
 		$actual = $method->invoke($loader);
 

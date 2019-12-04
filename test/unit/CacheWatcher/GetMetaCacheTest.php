@@ -6,6 +6,8 @@ namespace PTS\SymfonyDiLoader\Unit\CacheWatcher;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\CacheWatcher;
+use ReflectionException;
+use ReflectionMethod;
 
 class GetMetaCacheTest extends TestCase
 {
@@ -13,7 +15,7 @@ class GetMetaCacheTest extends TestCase
 	/**
 	 * @inheritdoc
 	 */
-	public function tearDown()
+	public function tearDown(): void
 	{
 		parent::tearDown();
 		unset($this->fs);
@@ -32,7 +34,7 @@ class GetMetaCacheTest extends TestCase
 	 * @param array $expected
 	 * @param array $configs
 	 *
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 *
 	 * @dataProvider dataProvider
 	 */
@@ -41,7 +43,7 @@ class GetMetaCacheTest extends TestCase
 		$watcher = new CacheWatcher;
 		$filePath = $this->createMetaCache($configs, 'pathToFileCache');
 
-		$method = new \ReflectionMethod(CacheWatcher::class, 'getMetaCache');
+		$method = new ReflectionMethod(CacheWatcher::class, 'getMetaCache');
 		$method->setAccessible(true);
 		$actual = $method->invoke($watcher, $filePath);
 

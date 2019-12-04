@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\FactoryContainer;
 use PTS\SymfonyDiLoader\LoaderContainer;
 use PTS\SymfonyDiLoader\Unit\TestExtension;
+use ReflectionMethod;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class CreateContainerTest extends TestCase
@@ -18,7 +19,7 @@ class CreateContainerTest extends TestCase
 
         $factory = $this->getMockBuilder(FactoryContainer::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create'])
+            ->onlyMethods(['create'])
             ->getMock();
         $factory->expects(static::once())->method('create')
             ->with($configs, $extensions)
@@ -26,7 +27,7 @@ class CreateContainerTest extends TestCase
 
         $loader = new LoaderContainer([], '', $factory);
 
-        $method = new \ReflectionMethod(LoaderContainer::class, 'createContainer');
+        $method = new ReflectionMethod(LoaderContainer::class, 'createContainer');
         $method->setAccessible(true);
         $container = $method->invoke($loader, $configs, $extensions);
         static::assertInstanceOf(ContainerBuilder::class, $container);

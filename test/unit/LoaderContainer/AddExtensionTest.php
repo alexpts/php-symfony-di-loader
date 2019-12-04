@@ -6,6 +6,7 @@ namespace PTS\SymfonyDiLoader\Unit\LoaderContainer;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\LoaderContainer;
 use PTS\SymfonyDiLoader\Unit\TestExtension;
+use ReflectionProperty;
 
 class AddExtensionTest extends TestCase
 {
@@ -16,7 +17,7 @@ class AddExtensionTest extends TestCase
         $loader->addExtension(new TestExtension());
         $loader->addExtension(new TestExtension());
 
-        $property = new \ReflectionProperty(LoaderContainer::class, 'extensions');
+        $property = new ReflectionProperty(LoaderContainer::class, 'extensions');
         $property->setAccessible(true);
         $extensions = $property->getValue($loader);
         static::assertCount(2, $extensions);

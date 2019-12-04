@@ -6,6 +6,8 @@ namespace PTS\SymfonyDiLoader\Unit\LoaderContainer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\LoaderContainer;
+use ReflectionException;
+use ReflectionProperty;
 
 class SetCheckExpiredTest extends TestCase
 {
@@ -13,7 +15,7 @@ class SetCheckExpiredTest extends TestCase
      * @param bool $expected
      * @param bool $value
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      * @dataProvider dataProviderCheckExpired
      */
@@ -28,7 +30,7 @@ class SetCheckExpiredTest extends TestCase
         $actual = $loader->setCheckExpired($value);
         self::assertInstanceOf(LoaderContainer::class, $actual);
 
-        $checkExpired = new \ReflectionProperty(LoaderContainer::class, 'checkExpired');
+        $checkExpired = new ReflectionProperty(LoaderContainer::class, 'checkExpired');
         $checkExpired->setAccessible(true);
         $actual = $checkExpired->getValue($loader);
         self::assertSame($expected, $actual);

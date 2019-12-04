@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader\Unit;
 
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\FactoryContainer;
+use ReflectionException;
+use ReflectionProperty;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -14,7 +17,7 @@ class FactoryContainerTest extends TestCase
 {
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function testConstructor(): void
     {
@@ -24,17 +27,17 @@ class FactoryContainerTest extends TestCase
         $factory = new FactoryContainer($arg1, $arg2);
         self::assertInstanceOf(FactoryContainer::class, $factory);
 
-        $classLoader = new \ReflectionProperty(FactoryContainer::class, 'classLoader');
+        $classLoader = new ReflectionProperty(FactoryContainer::class, 'classLoader');
         $classLoader->setAccessible(true);
         self::assertSame($arg1, $classLoader->getValue($factory));
 
-        $locator = new \ReflectionProperty(FactoryContainer::class, 'locator');
+        $locator = new ReflectionProperty(FactoryContainer::class, 'locator');
         $locator->setAccessible(true);
         self::assertSame($arg2, $locator->getValue($factory));
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function testCreateBuilder(): void
     {
@@ -48,7 +51,7 @@ class FactoryContainerTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function testCreateLoader(): void
     {
@@ -66,7 +69,7 @@ class FactoryContainerTest extends TestCase
     /**
      * @param array $configs
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @dataProvider dataProviderCreate
      */
@@ -78,13 +81,13 @@ class FactoryContainerTest extends TestCase
 
         $loaderMock = $this->getMockBuilder(YamlFileLoader::class)
             ->disableOriginalConstructor()
-            ->setMethods(['load'])
+            ->onlyMethods(['load'])
             ->getMock();
         $loaderMock->expects(self::exactly(\count($configs)))->method('load');
 
         /** @var MockObject|FactoryContainer $factory */
         $factory = $this->getMockBuilder(FactoryContainer::class)
-            ->setMethods(['createLoader'])
+            ->onlyMethods(['createLoader'])
             ->setConstructorArgs([$classLoader, $locator])
             ->getMock();
         $factory->expects(self::once())->method('createLoader')->willReturn($loaderMock);

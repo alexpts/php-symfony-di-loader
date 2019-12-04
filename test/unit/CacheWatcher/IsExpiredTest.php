@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader\Unit\CacheWatcher;
 
+use Exception;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\TestCase;
@@ -17,7 +18,7 @@ class IsExpiredTest extends TestCase
 	/**
 	 * @inheritdoc
 	 */
-	public function setUp()
+	public function setUp(): void
 	{
 		parent::setUp();
 		$this->fs = vfsStream::setup('temp-di-loader');
@@ -26,7 +27,7 @@ class IsExpiredTest extends TestCase
 	/**
 	 * @inheritdoc
 	 */
-	public function tearDown()
+	public function tearDown(): void
 	{
 		parent::tearDown();
 		unset($this->fs);
@@ -37,7 +38,7 @@ class IsExpiredTest extends TestCase
      * @param array $files
      *
      * @dataProvider dataProviderIsExpired
-     * @throws \Exception
+     * @throws Exception
      */
     public function testIsExpired(bool $expected, array $files): void
     {

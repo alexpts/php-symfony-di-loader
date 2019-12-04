@@ -8,21 +8,23 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\CacheWatcher;
 use PTS\SymfonyDiLoader\LoaderContainer;
+use ReflectionException;
+use ReflectionMethod;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class TryGetContainerFromCacheTest extends TestCase
 {
-	protected $cacheFile = 'cache.php';
+	protected string $cacheFile = 'cache.php';
 
-	public function tearDown()
+	public function tearDown(): void
 	{
 		parent::tearDown();
 		@unlink('vfs://temp-di-loader/cache.php');
 	}
 
 	/**
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	public function testCacheNotExist(): void
 	{
@@ -30,7 +32,7 @@ class TryGetContainerFromCacheTest extends TestCase
 		$cacheFile = 'cache.php';
 		$loader = new LoaderContainer($configs, $cacheFile);
 
-		$method = new \ReflectionMethod(LoaderContainer::class, 'tryGetContainerFromCache');
+		$method = new ReflectionMethod(LoaderContainer::class, 'tryGetContainerFromCache');
 		$method->setAccessible(true);
 		$actual = $method->invoke($loader, $cacheFile, $configs);
 
@@ -42,7 +44,7 @@ class TryGetContainerFromCacheTest extends TestCase
 	 * @param bool $isActual
 	 * @param bool $isContainer
 	 *
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 *
 	 * @dataProvider dataProvider
 	 */
@@ -52,18 +54,18 @@ class TryGetContainerFromCacheTest extends TestCase
 		$configs = ['conf1.yml', '/some/conf2.yml'];
 		$cacheFile = 'cache.php';
 
-		$watcher = $this->getMockBuilder(CacheWatcher::class)->setMethods(['isActualCache'])->getMock();
+		$watcher = $this->getMockBuilder(CacheWatcher::class)->onlyMethods(['isActualCache'])->getMock();
 		$watcher->method('isActualCache')->willReturn($isActual);
 
 		/** @var MockObject|LoaderContainer $loader */
 		$loader = $this->getMockBuilder(LoaderContainer::class)
 			->setConstructorArgs([$configs, $cacheFile])
-			->setMethods(['getWatcher'])
+			->onlyMethods(['getWatcher'])
 			->getMock();
 		$loader->method('getWatcher')->willReturn($watcher);
 		$loader->setCheckExpired($isCheckExpired);
 
-		$method = new \ReflectionMethod(LoaderContainer::class, 'tryGetContainerFromCache');
+		$method = new ReflectionMethod(LoaderContainer::class, 'tryGetContainerFromCache');
 		$method->setAccessible(true);
 		$actual = $method->invoke($loader, $path, $configs);
 
@@ -84,7 +86,7 @@ class TryGetContainerFromCacheTest extends TestCase
 	}
 
 	/**
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	protected function createCacheFile(): string
 	{
@@ -92,14 +94,14 @@ class TryGetContainerFromCacheTest extends TestCase
 		$loader = $this->createMock(LoaderContainer::class);
 
 		$container = $this->getMockBuilder(ContainerBuilder::class)
-			->setMethods(['isCompiled'])
+			->onlyMethods(['isCompiled'])
 			->getMock();
 		$container->method('isCompiled')->willReturn(true);
 
 		$vfs = vfsStream::setup('temp-di-loader');
 		$path = vfsStream::newFile($this->cacheFile)->at($vfs)->url();
 
-		$method = new \ReflectionMethod(LoaderContainer::class, 'dump');
+		$method = new ReflectionMethod(LoaderContainer::class, 'dump');
 		$method->setAccessible(true);
 		$method->invoke($loader, $path, $class, $container);
 

@@ -6,11 +6,13 @@ namespace PTS\SymfonyDiLoader\Unit\LoaderContainer;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\LoaderContainer;
+use ReflectionException;
+use ReflectionMethod;
 
 class DumpMetaTest extends TestCase
 {
 	/**
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	public function testDumpMeta(): void
 	{
@@ -21,7 +23,7 @@ class DumpMetaTest extends TestCase
 		$vfs = vfsStream::setup('temp-di-loader');
 		$path = vfsStream::newFile($cacheFileName . '.meta')->at($vfs)->url();
 
-		$method = new \ReflectionMethod(LoaderContainer::class, 'dumpMeta');
+		$method = new ReflectionMethod(LoaderContainer::class, 'dumpMeta');
 		$method->setAccessible(true);
 		$method->invoke($loader, $path, $configs);
 
@@ -31,7 +33,7 @@ class DumpMetaTest extends TestCase
 	}
 
 	/**
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	public function testDumpMetaNotPermission(): void
 	{
@@ -45,7 +47,7 @@ class DumpMetaTest extends TestCase
 		$this->expectException(\RuntimeException::class);
 		$this->expectExceptionMessage('Can`t dump meta for DI container');
 
-		$method = new \ReflectionMethod(LoaderContainer::class, 'dumpMeta');
+		$method = new ReflectionMethod(LoaderContainer::class, 'dumpMeta');
 		$method->setAccessible(true);
 		$method->invoke($loader, $path, $configs);
 	}
