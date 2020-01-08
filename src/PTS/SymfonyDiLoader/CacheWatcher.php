@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader;
 
+use RuntimeException;
+use function count;
+
 class CacheWatcher
 {
 	/**
@@ -14,16 +17,15 @@ class CacheWatcher
 	public function isActualCache(string $fileCache, array $configs): bool
 	{
 		$oldConfigs = $this->getMetaCache($fileCache . '.meta');
-		if (\count($oldConfigs) !== \count($configs)) {
+        $configs = array_unique($configs);
+
+		if (count($oldConfigs) !== count($configs)) {
 			return false;
 		}
 
-		$diff = array_diff($oldConfigs, $configs);
-		if (\count($diff)) {
-			return false;
-		}
-
-		return !$this->isExpired($fileCache, $configs);
+		return array_diff($oldConfigs, $configs)
+            ? false
+            : !$this->isExpired($fileCache, $configs);
 	}
 
 	/**
@@ -34,7 +36,7 @@ class CacheWatcher
 	protected function getMetaCache(string $fileMeta): array
 	{
 		if (!file_exists($fileMeta)) {
-			throw new \RuntimeException('Can`t read meta for DI container');
+			throw new RuntimeException('Can`t read meta for DI container');
 		}
 
 		$configs = file_get_contents($fileMeta);

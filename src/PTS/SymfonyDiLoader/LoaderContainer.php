@@ -3,35 +3,30 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader;
 
+use RuntimeException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
-use Symfony\Component\DependencyInjection\Exception\EnvParameterException;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Throwable;
 
 class LoaderContainer implements LoaderContainerInterface
 {
-	/** @var array */
-	protected $configFiles = [];
+	/** @var string[] */
+	protected array $configFiles = [];
 
-	/** @var FactoryContainer */
-	protected $factory;
-	/** @var ContainerInterface */
-	protected $container;
-	/** @var CacheWatcher */
-	protected $cacheWatcher;
+	protected FactoryContainer $factory;
+	protected ?ContainerInterface $container = null;
+	protected CacheWatcher $cacheWatcher;
 	/** @var ExtensionInterface[] */
-	protected $extensions = [];
+	protected array $extensions = [];
 
-	/** @var string */
-	protected $cacheFile = '';
-	/** @var bool */
-	protected $checkExpired = true;
+	protected string $cacheFile = '';
+	protected bool $checkExpired = true;
 
-	/** @var string */
-	protected $classContainer = 'AppContainer';
+	protected string $classContainer = 'AppContainer';
 
 	/**
 	 * @param string[] $configFiles
@@ -58,10 +53,6 @@ class LoaderContainer implements LoaderContainerInterface
 		return $this;
 	}
 
-	/**
-	 * @return ContainerInterface
-	 * @throws \Exception
-	 */
 	public function getContainer(): ContainerInterface
 	{
 		if ($this->container === null) {
@@ -94,18 +85,11 @@ class LoaderContainer implements LoaderContainerInterface
 	{
 		try {
 			file_put_contents($filePath, serialize($configFiles));
-		} catch (\Throwable $throwable) {
-			throw new \RuntimeException('Can`t dump meta for DI container', 0, $throwable);
+		} catch (Throwable $throwable) {
+			throw new RuntimeException('Can`t dump meta for DI container', 0, $throwable);
 		}
 	}
 
-	/**
-	 * @param string $filePath
-	 * @param string $className
-	 * @param ContainerBuilder $container
-	 *
-	 * @throws EnvParameterException
-	 */
 	protected function dump(string $filePath, string $className, ContainerBuilder $container): void
 	{
 		$dumper = new PhpDumper($container);
@@ -114,8 +98,8 @@ class LoaderContainer implements LoaderContainerInterface
 			file_put_contents($filePath, $dumper->dump([
 				'class' => $className,
 			]));
-		} catch (\Throwable $throwable) {
-			throw new \RuntimeException('Can`t dump cache for DI container', 0, $throwable);
+		} catch (Throwable $throwable) {
+			throw new RuntimeException('Can`t dump cache for DI container', 0, $throwable);
 		}
 	}
 
