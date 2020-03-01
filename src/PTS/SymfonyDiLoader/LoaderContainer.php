@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
 
 class LoaderContainer implements LoaderContainerInterface
@@ -17,6 +18,7 @@ class LoaderContainer implements LoaderContainerInterface
 	/** @var string[] */
 	protected array $configFiles = [];
 
+    protected ?Filesystem $fs = null;
 	protected FactoryContainer $factory;
 	protected ?ContainerInterface $container = null;
 	protected CacheWatcher $cacheWatcher;
@@ -84,7 +86,7 @@ class LoaderContainer implements LoaderContainerInterface
 	protected function dumpMeta(string $filePath, array $configFiles): void
 	{
 		try {
-			file_put_contents($filePath, serialize($configFiles));
+		    $this->getFilesystem()->dumpFile($filePath, serialize($configFiles));
 		} catch (Throwable $throwable) {
 			throw new RuntimeException('Can`t dump meta for DI container', 0, $throwable);
 		}
@@ -95,9 +97,9 @@ class LoaderContainer implements LoaderContainerInterface
 		$dumper = new PhpDumper($container);
 
 		try {
-			file_put_contents($filePath, $dumper->dump([
-				'class' => $className,
-			]));
+		    $this->getFilesystem()->dumpFile($filePath, $dumper->dump([
+                'class' => $className,
+            ]));
 		} catch (Throwable $throwable) {
 			throw new RuntimeException('Can`t dump cache for DI container', 0, $throwable);
 		}
@@ -127,4 +129,13 @@ class LoaderContainer implements LoaderContainerInterface
 	{
 		return $this->cacheWatcher;
 	}
+
+	protected function getFilesystem(): Filesystem
+    {
+        if ($this->fs === null) {
+            $this->fs = new Filesystem;
+        }
+
+        return $this->fs;
+    }
 }

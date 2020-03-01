@@ -55,8 +55,8 @@ class DumpTest extends TestCase
 			->getMock();
 		$container->method('isCompiled')->willReturn(true);
 
-		$vfs = vfsStream::setup('temp-di-loader');
-		$path = vfsStream::newFile($cacheFileName, 0444)->at($vfs)->url();
+		$vfs = vfsStream::setup('temp-di-loader', 0550);
+		$path = vfsStream::newFile($cacheFileName, 0440)->at($vfs)->url();
 
 		$this->expectException(RuntimeException::class);
 		$this->expectExceptionMessage('Can`t dump cache for DI container');

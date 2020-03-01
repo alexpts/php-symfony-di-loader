@@ -41,8 +41,8 @@ class DumpMetaTest extends TestCase
 		$cacheFileName = 'cache.php';
 		$loader = new LoaderContainer($configs, $cacheFileName);
 
-		$vfs = vfsStream::setup('temp-di-loader');
-		$path = vfsStream::newFile($cacheFileName . '.meta', 0444)->at($vfs)->url();
+		$vfs = vfsStream::setup('temp-di-loader', 0550);
+		$path = vfsStream::newFile($cacheFileName . '.meta', 0440)->at($vfs)->url();
 
 		$this->expectException(\RuntimeException::class);
 		$this->expectExceptionMessage('Can`t dump meta for DI container');
