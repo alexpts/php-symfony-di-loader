@@ -20,13 +20,11 @@ use PTS\SymfonyDiLoader\FactoryContainer;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Config\FileLocator;
 
-$factory = new FactoryContainer(YamlFileLoader::class, new FileLocator);
-
 $configs = ['./container.yml'];
 $fileCache = __DIR__ . '/../cache/container.cache.php';
 
-$loader = new LoaderContainer($configs, $fileCache, $factory);
-$container = $loader->getContainer();
+$loader = new LoaderContainer;
+$container = $loader->getContainer($configs, $fileCache);
 ```
 
 
@@ -34,16 +32,16 @@ Loader has auto detect config changes and auto rebuild container.
 For disable auto check expired cache:
 
 ```php
-$loader = new LoaderContainer($configs, $fileCache, $factory);
+$loader = new LoaderContainer;
 $loader->setCheckExpired(false);
-$container = $loader->getContainer();
+$container = $loader->getContainer($configs, $fileCache);
 ```
 
 
 Custom container extension:
 ```php
-$loader = new LoaderContainer($configs, $fileCache, $factory);
+$loader = new LoaderContainer;
 $loader->addExtension($someContainerExtension);
 $loader->addExtension($someContainerExtension2);
-$container = $loader->getContainer();
+$container = $loader->getContainer($configs, $fileCache);
 ```

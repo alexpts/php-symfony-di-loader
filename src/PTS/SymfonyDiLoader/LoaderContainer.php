@@ -15,39 +15,41 @@ use Throwable;
 
 class LoaderContainer implements LoaderContainerInterface
 {
-	/** @var string[] */
-	protected array $configFiles = [];
 
-    protected ?Filesystem $fs = null;
+	protected CacheWatcher $cacheWatcher;
+	protected ?Filesystem $fs = null;
 	protected FactoryContainer $factory;
 	protected ?ContainerInterface $container = null;
-	protected CacheWatcher $cacheWatcher;
 	/** @var ExtensionInterface[] */
 	protected array $extensions = [];
 
-	protected string $cacheFile = '';
 	protected bool $checkExpired = true;
 
 	protected string $classContainer = 'AppContainer';
 
-	/**
-	 * @param string[] $configFiles
-	 * @param string $cacheFile
-	 * @param FactoryContainer|null $factory
-	 */
-	public function __construct(array $configFiles, string $cacheFile, FactoryContainer $factory = null)
+	public function __construct(FactoryContainer $factory = null, CacheWatcher $cacheWatcher = null)
 	{
-		$this->configFiles = $configFiles;
-		$this->cacheFile = $cacheFile;
 		$this->factory = $factory ?? new FactoryContainer(YamlFileLoader::class, new FileLocator);
-		$this->cacheWatcher = new CacheWatcher;
+		$this->cacheWatcher = $cacheWatcher ?? new CacheWatcher;
+		$this->fs = new Filesystem;
+	}
+
+	public function getContainer(array $configFiles, string $cacheFile): ContainerInterface
+	{
+		if ($this->container === null) {
+			$this->container = $this->tryGetContainerFromCache($configFiles, $cacheFile)
+				?? $this->generateContainer($configFiles, $cacheFile);
+			$this->ready();
+		}
+
+		return $this->container;
 	}
 
 	public function addExtension(ExtensionInterface $extension): self
-    {
-        $this->extensions[] = $extension;
-        return $this;
-    }
+	{
+		$this->extensions[] = $extension;
+		return $this;
+	}
 
 	public function setCheckExpired(bool $checkExpired = true): self
 	{
@@ -55,24 +57,14 @@ class LoaderContainer implements LoaderContainerInterface
 		return $this;
 	}
 
-	public function getContainer(): ContainerInterface
+	protected function generateContainer(array $configFiles, string $cacheFile): ContainerInterface
 	{
-		if ($this->container === null) {
-            $container = $this->tryGetContainerFromCache($this->cacheFile, $this->configFiles);
-            $this->container = $container ?? $this->generateContainer();
-		}
+		$container = $this->createContainer($configFiles, $this->extensions);
+		$this->dump($cacheFile, $this->classContainer, $container);
+		$this->dumpMeta($cacheFile . '.meta', $configFiles);
 
-		return $this->container;
+		return $container;
 	}
-
-	protected function generateContainer(): ContainerInterface
-    {
-        $container = $this->createContainer($this->configFiles, $this->extensions);
-        $this->dump($this->cacheFile, $this->classContainer, $container);
-        $this->dumpMeta($this->cacheFile . '.meta', $this->configFiles);
-
-        return $container;
-    }
 
 	protected function createContainer(array $configs, array $extensions = []): ContainerBuilder
 	{
@@ -86,7 +78,7 @@ class LoaderContainer implements LoaderContainerInterface
 	protected function dumpMeta(string $filePath, array $configFiles): void
 	{
 		try {
-		    $this->getFilesystem()->dumpFile($filePath, serialize($configFiles));
+			$this->fs->dumpFile($filePath, serialize($configFiles));
 		} catch (Throwable $throwable) {
 			throw new RuntimeException('Can`t dump meta for DI container', 0, $throwable);
 		}
@@ -97,9 +89,9 @@ class LoaderContainer implements LoaderContainerInterface
 		$dumper = new PhpDumper($container);
 
 		try {
-		    $this->getFilesystem()->dumpFile($filePath, $dumper->dump([
-                'class' => $className,
-            ]));
+			$this->fs->dumpFile($filePath, $dumper->dump([
+				'class' => $className,
+			]));
 		} catch (Throwable $throwable) {
 			throw new RuntimeException('Can`t dump cache for DI container', 0, $throwable);
 		}
@@ -111,13 +103,13 @@ class LoaderContainer implements LoaderContainerInterface
 	 *
 	 * @return null|ContainerInterface
 	 */
-	protected function tryGetContainerFromCache(string $fileCache, array $configs): ?ContainerInterface
+	protected function tryGetContainerFromCache(array $configs, string $fileCache): ?ContainerInterface
 	{
 		if (!file_exists($fileCache)) {
 			return null;
 		}
 
-		if ($this->checkExpired && !$this->getWatcher()->isActualCache($fileCache, $configs)) {
+		if ($this->checkExpired && !$this->cacheWatcher->isActualCache($fileCache, $configs)) {
 			return null;
 		}
 
@@ -125,17 +117,9 @@ class LoaderContainer implements LoaderContainerInterface
 		return new $this->classContainer;
 	}
 
-	protected function getWatcher(): CacheWatcher
+	protected function ready(): void
 	{
-		return $this->cacheWatcher;
+		unset($this->cacheWatcher, $this->factory, $this->fs);
+		$this->extensions = [];
 	}
-
-	protected function getFilesystem(): Filesystem
-    {
-        if ($this->fs === null) {
-            $this->fs = new Filesystem;
-        }
-
-        return $this->fs;
-    }
 }
