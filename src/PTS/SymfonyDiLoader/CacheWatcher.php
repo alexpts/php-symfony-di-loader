@@ -40,7 +40,7 @@ class CacheWatcher
 		}
 
 		$configs = file_get_contents($fileMeta);
-		return unserialize($configs);
+		return unserialize($configs, ['allowed_classes' => false]);
 	}
 
 	/**
