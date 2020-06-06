@@ -88,7 +88,7 @@ class Dumper
 
 		return [
 			'watch' => $watch,
-			'reflections' => $reflections
+			'reflections' => $reflections,
 		];
 	}
 }

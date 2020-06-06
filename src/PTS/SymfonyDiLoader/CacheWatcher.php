@@ -36,19 +36,19 @@ class CacheWatcher
 		['watch' => $watch, 'reflections' => $reflections] = $this->getMetaCache($fileCache . '.v2.meta');
 		$watch = array_unique([...$watch, ...$this->getWatchFiles()]);
 
-        if ($this->hasNewConfigFile($watchFiles, $watch)) {
-        	return false;
-        }
+		if ($this->hasNewConfigFile($watchFiles, $watch)) {
+			return false;
+		}
 
-        $lastUpdateTime = filemtime($fileCache);
-        if ($this->isExpired($lastUpdateTime, $watch)) {
-        	return false;
-        }
-        if ($this->isWatchReflection && $this->isExpired($lastUpdateTime, $reflections)) {
-        	return false;
-        }
+		$lastUpdateTime = filemtime($fileCache);
+		if ($this->isExpired($lastUpdateTime, $watch)) {
+			return false;
+		}
+		if ($this->isWatchReflection && $this->isExpired($lastUpdateTime, $reflections)) {
+			return false;
+		}
 
-        return true;
+		return true;
 	}
 
 	public function setWatchFiles(array $files): self

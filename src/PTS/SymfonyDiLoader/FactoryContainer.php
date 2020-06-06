@@ -72,14 +72,17 @@ class FactoryContainer
 	}
 
 	protected function registerExtensions(ContainerBuilder $builder, array $extensions = []): void
-    {
-        array_map(static function(ExtensionInterface $extension) use ($builder) {
-            $builder->registerExtension($extension);
-        }, $extensions);
-    }
-
-	protected function createLoader(string $classLoader, ContainerBuilder $builder, FileLocatorInterface $locator): LoaderInterface
 	{
+		array_map(static function (ExtensionInterface $extension) use ($builder) {
+			$builder->registerExtension($extension);
+		}, $extensions);
+	}
+
+	protected function createLoader(
+		string $classLoader,
+		ContainerBuilder $builder,
+		FileLocatorInterface $locator
+	): LoaderInterface {
 		return new $classLoader($builder, $locator);
 	}
 }
