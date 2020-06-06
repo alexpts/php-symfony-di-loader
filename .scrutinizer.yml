@@ -22,16 +22,10 @@ build:
     tests:
         override:
             -
-                command: './vendor/bin/phpunit --config test/phpunit.xml'
+                command: './vendor/bin/phpunit --config test/phpunit.xml --coverage-clover=test/clover.xml'
                 coverage:
                     file: 'test/clover.xml'
                     format: 'clover'
 
 tools:
-    external_code_coverage: true
-    php_code_coverage: true
-    php_sim: true
-    php_mess_detector: true
-    php_pdepend: true
-    php_analyzer: true
-    php_cpd: true
+    external_code_coverage: false
