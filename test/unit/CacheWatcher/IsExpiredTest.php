@@ -12,8 +12,7 @@ use PTS\SymfonyDiLoader\CacheWatcher;
 class IsExpiredTest extends TestCase
 {
 
-	/** @var vfsStreamDirectory */
-	protected $fs;
+	protected vfsStreamDirectory $fs;
 
 	/**
 	 * @inheritdoc
@@ -60,7 +59,7 @@ class IsExpiredTest extends TestCase
         }
 
         $watcher = new CacheWatcher;
-		$actual = $watcher->isExpired($cacheFilePath, $configs);
+		$actual = $watcher->isExpired(filemtime($cacheFilePath), $configs);
         self::assertSame($expected, $actual);
     }
 

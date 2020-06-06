@@ -3,40 +3,31 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader\Unit\CacheWatcher;
 
+use JsonException;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use PTS\SymfonyDiLoader\CacheWatcher;
-use ReflectionException;
 use ReflectionMethod;
+use RuntimeException;
 
 class GetMetaCacheTest extends TestCase
 {
 
-	/**
-	 * @inheritdoc
-	 */
-	public function tearDown(): void
-	{
-		parent::tearDown();
-		unset($this->fs);
-	}
-
 	public function testNotFound(): void
 	{
-		$this->expectException(\RuntimeException::class);
+		$this->expectException(RuntimeException::class);
 		$this->expectExceptionMessage('Can`t read meta for DI container');
 
 		$watcher = new CacheWatcher;
-		$watcher->isActualCache('unknownCachePath.php', ['conf1']);
+		$watcher->isActual('unknownCachePath.php', ['conf1']);
 	}
 
 	/**
 	 * @param array $expected
 	 * @param array $configs
 	 *
-	 * @throws ReflectionException
-	 *
 	 * @dataProvider dataProvider
+	 * @throws JsonException
 	 */
 	public function testGet(array $expected, array $configs): void
 	{
@@ -55,17 +46,17 @@ class GetMetaCacheTest extends TestCase
 	 * @param string $filePath
 	 *
 	 * @return string
+	 * @throws JsonException
 	 */
 	protected function createMetaCache(array $configs, string $filePath): string
 	{
 		$fs = vfsStream::setup('/temp/di-loader');
 
-		$filePathInMemory = vfsStream::newFile($filePath)
+		$content = json_encode($configs, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+		return vfsStream::newFile($filePath)
 			->at($fs)
-			->setContent(serialize($configs))
+			->setContent($content)
 			->url();
-
-		return $filePathInMemory;
 	}
 
 	public function dataProvider(): array

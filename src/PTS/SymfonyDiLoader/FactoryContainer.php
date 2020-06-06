@@ -4,20 +4,29 @@ declare(strict_types=1);
 namespace PTS\SymfonyDiLoader;
 
 use Exception;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class FactoryContainer
 {
 	protected FileLocatorInterface $locator;
-	protected string $classLoader;
 
-	public function __construct(string $classLoader, FileLocatorInterface $locator)
+	protected array $loaders = [];
+	protected array $mapLoader = [
+		'yml' => YamlFileLoader::class,
+		'xml' => XmlFileLoader::class,
+		'php' => PhpFileLoader::class,
+	];
+
+	public function __construct()
 	{
-		$this->classLoader = $classLoader;
-		$this->locator = $locator;
+		$this->locator = new FileLocator;
 	}
 
 	/**
@@ -31,14 +40,30 @@ class FactoryContainer
 	{
 		$builder = $this->createBuilder();
 		$this->registerExtensions($builder, $extensions);
-		$loader = $this->createLoader($builder, $this->locator);
 
 		foreach ($configs as $config) {
+			$loader = $this->getLoader($config, $builder);
 			$loader->load($config);
 		}
 
 		$builder->compile(true);
+		$this->resetLoaders();
 		return $builder;
+	}
+
+	protected function resetLoaders(): void
+	{
+		$this->loaders = [];
+	}
+
+	protected function getLoader(string $config, ContainerBuilder $builder)
+	{
+		$ext = pathinfo($config, PATHINFO_EXTENSION);
+		$ext = $ext === 'yaml' ? 'yml' : $ext;
+
+		$classLoader = $this->mapLoader[$ext];
+		$this->loaders[$classLoader] ??= $this->createLoader($classLoader, $builder, $this->locator);
+		return $this->loaders[$classLoader];
 	}
 
 	protected function createBuilder(): ContainerBuilder
@@ -53,9 +78,8 @@ class FactoryContainer
         }, $extensions);
     }
 
-	protected function createLoader(ContainerBuilder $builder, FileLocatorInterface $locator): LoaderInterface
+	protected function createLoader(string $classLoader, ContainerBuilder $builder, FileLocatorInterface $locator): LoaderInterface
 	{
-		$class = $this->classLoader;
-		return new $class($builder, $locator);
+		return new $classLoader($builder, $locator);
 	}
 }

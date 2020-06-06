@@ -3,35 +3,94 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader;
 
+use JsonException;
 use RuntimeException;
-use function count;
+use function json_decode;
 
 class CacheWatcher
 {
+	/** @var string[] */
+	protected array $watchFiles = [];
+	protected bool $isWatchReflection = true;
+
+	public function __construct(bool $isWatchReflection = true)
+	{
+		$this->setIsWatchReflection($isWatchReflection);
+	}
+
+	public function setIsWatchReflection(bool $isWatchReflection): self
+	{
+		$this->isWatchReflection = $isWatchReflection;
+		return $this;
+	}
+
 	/**
 	 * @param string $fileCache
-	 * @param string[] $configs
+	 * @param string[] $watchFiles
+	 *
+	 * @return bool
+	 * @throws JsonException
+	 */
+	public function isActual(string $fileCache, array $watchFiles): bool
+	{
+		['watch' => $watch, 'reflections' => $reflections] = $this->getMetaCache($fileCache . '.v2.meta');
+		$watch = array_unique([...$watch, ...$this->getWatchFiles()]);
+
+        if ($this->hasNewConfigFile($watchFiles, $watch)) {
+        	return false;
+        }
+
+        $lastUpdateTime = filemtime($fileCache);
+        if ($this->isExpired($lastUpdateTime, $watch)) {
+        	return false;
+        }
+        if ($this->isWatchReflection && $this->isExpired($lastUpdateTime, $reflections)) {
+        	return false;
+        }
+
+        return true;
+	}
+
+	public function setWatchFiles(array $files): self
+	{
+		$this->watchFiles = $files;
+		return $this;
+	}
+
+	public function addWatchFile(string $file): self
+	{
+		$this->watchFiles[] = $file;
+		return $this;
+	}
+
+	public function getWatchFiles(): array
+	{
+		$this->watchFiles = array_unique($this->watchFiles);
+		return array_filter($this->watchFiles, fn(string $file) => file_exists($file));
+	}
+
+	/**
+	 * @param string[] $watch
+	 * @param string[] $oldWatch
 	 *
 	 * @return bool
 	 */
-	public function isActualCache(string $fileCache, array $configs): bool
+	protected function hasNewConfigFile(array $watch, array $oldWatch): bool
 	{
-		$oldConfigs = $this->getMetaCache($fileCache . '.meta');
-        $configs = array_unique($configs);
-
-		if (count($oldConfigs) !== count($configs)) {
-			return false;
+		foreach ($watch as $file) {
+			if (!in_array($file, $oldWatch, true)) {
+				return true;
+			}
 		}
 
-		return array_diff($oldConfigs, $configs)
-            ? false
-            : !$this->isExpired($fileCache, $configs);
+		return false;
 	}
 
 	/**
 	 * @param string $fileMeta
 	 *
 	 * @return string[]
+	 * @throws JsonException
 	 */
 	protected function getMetaCache(string $fileMeta): array
 	{
@@ -40,21 +99,20 @@ class CacheWatcher
 		}
 
 		$configs = file_get_contents($fileMeta);
-		return unserialize($configs, ['allowed_classes' => false]);
+		return json_decode($configs, true, 512, JSON_THROW_ON_ERROR);
 	}
 
 	/**
-	 * @param string $fileCache
+	 * @param int $cacheMtime
 	 * @param string[] $configs
 	 *
 	 * @return bool
 	 */
-	public function isExpired(string $fileCache, array $configs): bool
+	public function isExpired(int $cacheMtime, array $configs): bool
 	{
-		$cacheTime = filemtime($fileCache);
-
-		foreach ($configs as $config) {
-			if ($cacheTime < filemtime($config)) {
+		foreach ($configs as $file) {
+			$mTime = filemtime($file);
+			if ($mTime === false || $mTime > $cacheMtime) {
 				return true;
 			}
 		}

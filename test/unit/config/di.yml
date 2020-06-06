@@ -1,0 +1,10 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: false
+        public: true
+
+    PTS\SymfonyDiLoader\CacheWatcher: ~
+
+imports:
+    - { resource: import.yml }

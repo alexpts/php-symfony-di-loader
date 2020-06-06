@@ -16,27 +16,22 @@ Simple loader for symfony [DependencyInjection component]( https://symfony.com/d
 ```php
 <?php
 use PTS\SymfonyDiLoader\LoaderContainer;
-use PTS\SymfonyDiLoader\FactoryContainer;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\Config\FileLocator;
 
-$configs = ['./container.yml'];
-$fileCache = __DIR__ . '/../cache/container.cache.php';
+$configs = ['./container.yml', './container.xml', './container.php'];
+$fileCache = __DIR__ . '/var/container.cache.php';
 
 $loader = new LoaderContainer;
 $container = $loader->getContainer($configs, $fileCache);
 ```
 
-
-Loader has auto detect config changes and auto rebuild container.
-For disable auto check expired cache:
-
+Loader has auto detect config changes and watch services from configs and auto rebuild container.
+You can disable all watch for production:
 ```php
 $loader = new LoaderContainer;
-$loader->setCheckExpired(false);
+$loader->setCheckExpired(false); // watch configs disable
+$loader->getWatcher()->setIsWatchReflection(false); // watch service class disable
 $container = $loader->getContainer($configs, $fileCache);
 ```
-
 
 Custom container extension:
 ```php
