@@ -25,8 +25,8 @@
         "symfony/config": "^5.1"
     },
     "autoload": {
-        "psr-0": {
-            "PTS\\SymfonyDiLoader": "src"
+        "psr-4": {
+            "PTS\\SymfonyDiLoader\\": "src"
         }
     },
     "autoload-dev": {
