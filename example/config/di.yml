@@ -1,0 +1,9 @@
+---
+
+services:
+    _defaults:
+        autowire: true
+        public: true
+
+    Demo\DemoService: ~
+    PTS\SymfonyDiLoader\CacheWatcher: ~
