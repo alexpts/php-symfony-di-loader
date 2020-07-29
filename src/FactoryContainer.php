@@ -56,7 +56,7 @@ class FactoryContainer
 		$this->loaders = [];
 	}
 
-	protected function getLoader(string $config, ContainerBuilder $builder)
+	protected function getLoader(string $config, ContainerBuilder $builder): LoaderInterface
 	{
 		$ext = pathinfo($config, PATHINFO_EXTENSION);
 		$ext = $ext === 'yaml' ? 'yml' : $ext;

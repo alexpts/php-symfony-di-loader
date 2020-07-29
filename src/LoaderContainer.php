@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace PTS\SymfonyDiLoader;
 
 use JsonException;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
@@ -61,16 +60,11 @@ class LoaderContainer implements LoaderContainerInterface
 
 	protected function generateContainer(array $configFiles, string $cacheFile): ContainerInterface
 	{
-		$container = $this->createContainer($configFiles, $this->extensions);
+		$container = $this->factory->create($configFiles, $this->extensions);
 		$this->dumper->dump($cacheFile, $this->classContainer, $container);
 		$this->dumper->dumpMeta($cacheFile . '.v2.meta', $container, $this->getWatcher());
 
 		return $container;
-	}
-
-	protected function createContainer(array $configs, array $extensions = []): ContainerBuilder
-	{
-		return $this->factory->create($configs, $extensions);
 	}
 
 	/**
