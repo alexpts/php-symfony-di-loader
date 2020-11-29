@@ -8,9 +8,9 @@ use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 interface LoaderContainerInterface
 {
-	public function getContainer(array $configFiles, string $cacheFile): ContainerInterface;
+    public function getContainer(array $configFiles, string $cacheFile): ContainerInterface;
 
-	public function addExtension(ExtensionInterface $extension): self;
+    public function addExtension(ExtensionInterface $extension): static;
 
-	public function setCheckExpired(bool $checkExpired = true): self;
+    public function setCheckExpired(bool $checkExpired = true): static;
 }

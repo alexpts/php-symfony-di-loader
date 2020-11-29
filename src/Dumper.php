@@ -15,80 +15,83 @@ use Throwable;
 
 class Dumper
 {
-	protected Filesystem $fs;
+    protected Filesystem $fs;
 
-	public function __construct(Filesystem $fs = null)
-	{
-		$this->fs = $fs ?? new Filesystem;
-	}
+    public function __construct(Filesystem $fs = null)
+    {
+        $this->fs = $fs ?? new Filesystem;
+    }
 
-	public function dump(string $filePath, string $className, ContainerBuilder $container): void
-	{
-		$dumper = new PhpDumper($container);
+    public function dump(string $filePath, string $className, ContainerBuilder $container): void
+    {
+        $dumper = new PhpDumper($container);
 
-		try {
-			$this->fs->dumpFile($filePath, $dumper->dump([
-				'class' => $className,
-			]));
-		} catch (Throwable $throwable) {
-			throw new RuntimeException('Can`t dump cache for DI container', 0, $throwable);
-		}
-	}
+        try {
+            $this->fs->dumpFile($filePath, $dumper->dump([
+                'class' => $className,
+            ]));
+        } catch (Throwable $throwable) {
+            throw new RuntimeException('Can`t dump cache for DI container', 0, $throwable);
+        }
+    }
 
-	public function dumpMeta(string $filePath, ContainerBuilder $container, CacheWatcher $cacheWatcher): void
-	{
-		$watched = $this->getAllWatchFiles($container, $cacheWatcher);
+    public function dumpMeta(string $filePath, ContainerBuilder $container, CacheWatcher $cacheWatcher): void
+    {
+        $watched = $this->getAllWatchFiles($container, $cacheWatcher);
 
-		try {
-			$this->fs->dumpFile($filePath, json_encode($watched, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
-		} catch (Throwable $throwable) {
-			throw new RuntimeException('Can`t dump meta for DI container', 0, $throwable);
-		}
-	}
+        try {
+            $json = json_encode($watched, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+            $this->fs->dumpFile($filePath, $json);
+        } catch (Throwable $throwable) {
+            throw new RuntimeException('Can`t dump meta for DI container', 0, $throwable);
+        }
+    }
 
-	protected function getAllWatchFiles(ContainerBuilder $container, CacheWatcher $cacheWatcher): array
-	{
-		$reflectionExtractor = fn(): ReflectionClass => $this->classReflector;
+    protected function getAllWatchFiles(ContainerBuilder $container, CacheWatcher $cacheWatcher): array
+    {
 
-		$watch = [];
-		$reflections = [];
+        $reflectionExtractor = fn(): ReflectionClass => $this->classReflector; // $this => ReflectionClassResource
 
-		foreach ($container->getResources() as $resource) {
-			if ($resource instanceof ReflectionClassResource) {
-				$reflection = $reflectionExtractor->call($resource);
-				$reflections[] = $reflection->getFileName();
-				continue;
-			}
+        $watch = [];
+        /** @var string[] $reflections */
+        $reflections = [];
 
-			if ($resource instanceof FileResource) {
-				$watch[] = (string)$resource;
-				continue;
-			}
+        foreach ($container->getResources() as $resource) {
+            if ($resource instanceof ReflectionClassResource) {
+                $reflection = $reflectionExtractor->call($resource);
+                $reflections[] = $reflection->getFileName();
+                continue;
+            }
 
-			if ($resource instanceof ComposerResource) {
-				foreach ($resource->getVendors() as $vendorDir) {
-					$autoloadFiles = [
-						$vendorDir . '/autoload.php',
-						$vendorDir . '/composer/autoload_classmap.php',
-						$vendorDir . '/composer/autoload_files.php',
-						$vendorDir . '/composer/autoload_namespaces.php',
-						$vendorDir . '/composer/autoload_psr4.php',
-						$vendorDir . '/composer/autoload_real.php',
-						$vendorDir . '/composer/autoload_static.php',
-					];
-					array_push($watch, ...$autoloadFiles);
-				}
-				continue;
-			}
-		}
+            if ($resource instanceof FileResource) {
+                $watch[] = (string)$resource;
+                continue;
+            }
 
-		array_push($watch, ...$cacheWatcher->getWatchFiles());
-		$watch = array_unique($watch);
-		$reflections = array_unique($reflections);
+            if ($resource instanceof ComposerResource) {
+                foreach ($resource->getVendors() as $vendorDir) {
+                    $autoloadFiles = [
+                        $vendorDir . '/autoload.php',
+                        $vendorDir . '/composer/autoload_classmap.php',
+                        $vendorDir . '/composer/autoload_files.php',
+                        $vendorDir . '/composer/autoload_namespaces.php',
+                        $vendorDir . '/composer/autoload_psr4.php',
+                        $vendorDir . '/composer/autoload_real.php',
+                        $vendorDir . '/composer/autoload_static.php',
+                    ];
+                    array_push($watch, ...$autoloadFiles);
+                }
+                continue;
+            }
+        }
 
-		return [
-			'watch' => $watch,
-			'reflections' => $reflections,
-		];
-	}
+        array_push($watch, ...$cacheWatcher->getWatchFiles());
+        $watch = array_unique($watch);
+        $reflections = array_unique($reflections);
+
+        return [
+            'watch' => $watch,
+            'reflections' => $reflections,
+        ];
+    }
 }

@@ -15,74 +15,71 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class FactoryContainer
 {
-	protected FileLocatorInterface $locator;
+    protected FileLocatorInterface $locator;
 
-	protected array $loaders = [];
-	protected array $mapLoader = [
-		'yml' => YamlFileLoader::class,
-		'xml' => XmlFileLoader::class,
-		'php' => PhpFileLoader::class,
-	];
+    protected array $loaders = [];
+    protected array $mapLoader = [
+        'yaml' => YamlFileLoader::class,
+        'yml' => YamlFileLoader::class,
+        'xml' => XmlFileLoader::class,
+        'php' => PhpFileLoader::class,
+    ];
 
-	public function __construct()
-	{
-		$this->locator = new FileLocator;
-	}
+    public function __construct()
+    {
+        $this->locator = new FileLocator;
+    }
 
-	/**
-	 * @param string[] $configs
-	 * @param ExtensionInterface[] $extensions
-	 *
-	 * @return ContainerBuilder
-	 * @throws Exception
-	 */
-	public function create(array $configs, array $extensions = []): ContainerBuilder
-	{
-		$builder = $this->createBuilder();
-		$this->registerExtensions($builder, $extensions);
+    /**
+     * @param string[] $configs
+     * @param ExtensionInterface[] $extensions
+     *
+     * @return ContainerBuilder
+     * @throws Exception
+     */
+    public function create(array $configs, array $extensions = []): ContainerBuilder
+    {
+        $builder = $this->createBuilder();
+        $this->registerExtensions($builder, $extensions);
 
-		foreach ($configs as $config) {
-			$loader = $this->getLoader($config, $builder);
-			$loader->load($config);
-		}
+        foreach ($configs as $config) {
+            $loader = $this->getLoader($config, $builder);
+            $loader->load($config);
+        }
 
-		$builder->compile(true);
-		$this->resetLoaders();
-		return $builder;
-	}
+        $builder->compile(true);
+        $this->resetLoaders();
+        return $builder;
+    }
 
-	protected function resetLoaders(): void
-	{
-		$this->loaders = [];
-	}
+    protected function resetLoaders(): void
+    {
+        $this->loaders = [];
+    }
 
-	protected function getLoader(string $config, ContainerBuilder $builder): LoaderInterface
-	{
-		$ext = pathinfo($config, PATHINFO_EXTENSION);
-		$ext = $ext === 'yaml' ? 'yml' : $ext;
+    protected function getLoader(string $config, ContainerBuilder $builder): LoaderInterface
+    {
+        $ext = pathinfo($config, PATHINFO_EXTENSION);
+        $classLoader = $this->mapLoader[$ext];
+        $this->loaders[$classLoader] ??= $this->createLoader($classLoader, $builder, $this->locator);
+        return $this->loaders[$classLoader];
+    }
 
-		$classLoader = $this->mapLoader[$ext];
-		$this->loaders[$classLoader] ??= $this->createLoader($classLoader, $builder, $this->locator);
-		return $this->loaders[$classLoader];
-	}
+    protected function createBuilder(): ContainerBuilder
+    {
+        return new ContainerBuilder;
+    }
 
-	protected function createBuilder(): ContainerBuilder
-	{
-		return new ContainerBuilder;
-	}
+    protected function registerExtensions(ContainerBuilder $builder, array $extensions = []): void
+    {
+        array_map([$builder, 'registerExtension'], $extensions);
+    }
 
-	protected function registerExtensions(ContainerBuilder $builder, array $extensions = []): void
-	{
-		array_map(static function (ExtensionInterface $extension) use ($builder) {
-			$builder->registerExtension($extension);
-		}, $extensions);
-	}
-
-	protected function createLoader(
-		string $classLoader,
-		ContainerBuilder $builder,
-		FileLocatorInterface $locator
-	): LoaderInterface {
-		return new $classLoader($builder, $locator);
-	}
+    protected function createLoader(
+        string $classLoader,
+        ContainerBuilder $builder,
+        FileLocatorInterface $locator
+    ): LoaderInterface {
+        return new $classLoader($builder, $locator);
+    }
 }

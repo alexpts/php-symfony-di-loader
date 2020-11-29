@@ -12,27 +12,27 @@ use PTS\SymfonyDiLoader\CacheWatcher;
 class IsExpiredTest extends TestCase
 {
 
-	protected vfsStreamDirectory $fs;
+    protected vfsStreamDirectory $fs;
 
-	/**
-	 * @inheritdoc
-	 */
-	public function setUp(): void
-	{
-		parent::setUp();
-		$this->fs = vfsStream::setup('temp-di-loader');
-	}
+    /**
+     * @inheritdoc
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->fs = vfsStream::setup('temp-di-loader');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function tearDown(): void
-	{
-		parent::tearDown();
-		unset($this->fs);
-	}
+    /**
+     * @inheritdoc
+     */
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        unset($this->fs);
+    }
 
-	/**
+    /**
      * @param bool $expected
      * @param array $files
      *
@@ -41,25 +41,25 @@ class IsExpiredTest extends TestCase
      */
     public function testIsExpired(bool $expected, array $files): void
     {
-		$cacheFilePath = null;
-		$configs = [];
+        $cacheFilePath = null;
+        $configs = [];
 
         foreach ($files as $i => $file) {
             $path = vfsStream::newFile(random_int(0, 9999) . '_' . $file)
-				->at($this->fs)
-				->setContent('file body')
-				->url();
+                ->at($this->fs)
+                ->setContent('file body')
+                ->url();
 
-			$file === 'cache.php'
-				? $cacheFilePath = $path
-				: $configs[] = $path;
+            $file === 'cache.php'
+                ? $cacheFilePath = $path
+                : $configs[] = $path;
 
             $mtime = time() + $i;
             touch($path, $mtime);
         }
 
         $watcher = new CacheWatcher;
-		$actual = $watcher->isExpired(filemtime($cacheFilePath), $configs);
+        $actual = $watcher->isExpired(filemtime($cacheFilePath), $configs);
         self::assertSame($expected, $actual);
     }
 
