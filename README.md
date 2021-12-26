@@ -24,7 +24,7 @@ $loader = new LoaderContainer;
 $container = $loader->getContainer($configs, $fileCache);
 ```
 
-Loader has auto detect config changes and watch services from configs and auto rebuild container.
+Loader has autodetect config changes and watch services from configs and auto rebuild container.
 You can disable all watch for production:
 ```php
 $loader = new LoaderContainer;
