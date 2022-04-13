@@ -1,10 +1,6 @@
 # Symfony DI component loader
 
-[![Build Status](https://travis-ci.org/alexpts/php-symfony-di-loader.svg?branch=master)](https://travis-ci.org/alexpts/php-symfony-di-loader)
-[![Code Coverage](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/?branch=master)
-[![Code Climate](https://codeclimate.com/github/alexpts/php-symfony-di-loader/badges/gpa.svg)](https://codeclimate.com/github/alexpts/php-symfony-di-loader)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/alexpts/php-symfony-di-loader/?branch=master)
-
+[![codecov](https://codecov.io/gh/alexpts/php-symfony-di-loader/branch/master/graph/badge.svg?token=14L6IJA5UE)](https://codecov.io/gh/alexpts/php-symfony-di-loader)
 
 Simple loader for symfony [DependencyInjection component]( https://symfony.com/doc/current/components/dependency_injection.html)
 
