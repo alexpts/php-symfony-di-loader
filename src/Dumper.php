@@ -49,7 +49,6 @@ class Dumper
 
     protected function getAllWatchFiles(ContainerBuilder $container, CacheWatcher $cacheWatcher): array
     {
-
         $reflectionExtractor = fn(): ReflectionClass => $this->classReflector; // $this => ReflectionClassResource
 
         $watch = [];
@@ -81,7 +80,6 @@ class Dumper
                     ];
                     array_push($watch, ...$autoloadFiles);
                 }
-                continue;
             }
         }
 

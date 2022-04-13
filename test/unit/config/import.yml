@@ -1,9 +1,9 @@
 services:
-    _defaults:
-        autowire: true
-        autoconfigure: false
-        public: true
+  _defaults:
+    autowire: true
+    autoconfigure: false
+    public: true
 
-    Symfony\Component\Config\FileLocator: ~
-    PTS\SymfonyDiLoader\FactoryContainer:
-        arguments: [Symfony\Component\DependencyInjection\Loader\YamlFileLoader, '@Symfony\Component\Config\FileLocator']
+  Symfony\Component\Config\FileLocator: ~
+  PTS\SymfonyDiLoader\FactoryContainer:
+    arguments: [ Symfony\Component\DependencyInjection\Loader\YamlFileLoader, '@Symfony\Component\Config\FileLocator' ]

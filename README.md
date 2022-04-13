@@ -1,5 +1,6 @@
 # Symfony DI component loader
 
+[![phpunit](https://github.com/alexpts/php-symfony-di-loader/actions/workflows/phpunit.yml/badge.svg?branch=master)](https://github.com/alexpts/php-symfony-di-loader/actions/workflows/phpunit.yml)
 [![codecov](https://codecov.io/gh/alexpts/php-symfony-di-loader/branch/master/graph/badge.svg?token=14L6IJA5UE)](https://codecov.io/gh/alexpts/php-symfony-di-loader)
 
 Simple loader for symfony [DependencyInjection component]( https://symfony.com/doc/current/components/dependency_injection.html)
