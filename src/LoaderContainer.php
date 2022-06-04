@@ -3,88 +3,60 @@ declare(strict_types=1);
 
 namespace PTS\SymfonyDiLoader;
 
-use JsonException;
+use PTS\SymfonyDiLoader\Config\ConfigCache;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\FileLocatorInterface;
+use Symfony\Component\Config\ResourceCheckerConfigCache;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
+use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 
 class LoaderContainer implements LoaderContainerInterface
 {
-    protected CacheWatcher $cacheWatcher;
-    protected FactoryContainer $factory;
-    protected Dumper $dumper;
-    protected ?ContainerInterface $container = null;
-    /** @var ExtensionInterface[] */
-    protected array $extensions = [];
-    protected bool $checkExpired = true;
     protected string $classContainer = 'AppContainer';
+    protected FactoryContainerInterface $factory;
 
-    public function __construct(FactoryContainer $factory = null, CacheWatcher $cacheWatcher = null)
-    {
-        $this->factory = $factory ?? new FactoryContainer;
-        $this->cacheWatcher = $cacheWatcher ?? new CacheWatcher;
-        $this->dumper = new Dumper;
+    public function __construct(
+        protected FileLocatorInterface $locator = new FileLocator,
+        protected ContainerBuilder $builder = new ContainerBuilder,
+        FactoryContainerInterface $factory = null,
+    ) {
+        $this->factory = $factory ?? new FactoryContainer($this->locator);
     }
 
-    public function getWatcher(): CacheWatcher
+    public function getBuilder(): ContainerBuilder
     {
-        return $this->cacheWatcher;
+        return $this->builder;
     }
 
-    public function getContainer(array $configFiles, string $cacheFile): ContainerInterface
+    public function getContainer(array $configFiles, string $cacheFile, bool $isDebug = false): ContainerInterface
     {
-        if ($this->container === null) {
-            $this->container = $this->tryGetContainerFromCache($configFiles, $cacheFile)
-                ?? $this->generateContainer($configFiles, $cacheFile);
+        $configCache = $this->getCacheConfig($configFiles, $cacheFile, $isDebug);
+
+        if ($configCache->isFresh()) {
+            require_once $cacheFile;
+            return new $this->classContainer;
         }
 
-        return $this->container;
-    }
-
-    public function addExtension(ExtensionInterface $extension): static
-    {
-        $this->extensions[] = $extension;
-        return $this;
-    }
-
-    public function setCheckExpired(bool $checkExpired = true): static
-    {
-        $this->checkExpired = $checkExpired;
-        return $this;
-    }
-
-    public function clearProcessCache(): static
-    {
-        $this->container = null;
-        return $this;
-    }
-
-    protected function generateContainer(array $configFiles, string $cacheFile): ContainerInterface
-    {
-        $container = $this->factory->create($configFiles, $this->extensions);
-        $this->dumper->dump($cacheFile, $this->classContainer, $container);
-        $this->dumper->dumpMeta($cacheFile . '.v2.meta', $container, $this->getWatcher());
+        $container = $this->factory->build($this->builder, $configFiles);
+        $this->dumpCache($configCache, $container);
 
         return $container;
     }
 
-    /**
-     * @param string $fileCache
-     * @param string[] $configs
-     *
-     * @return null|ContainerInterface
-     * @throws JsonException
-     */
-    protected function tryGetContainerFromCache(array $configs, string $fileCache): ?ContainerInterface
+    protected function getCacheConfig(array $configFiles, string $cacheFile, bool $isDebug): ResourceCheckerConfigCache
     {
-        if (!file_exists($fileCache)) {
-            return null;
-        }
+        return new ConfigCache($cacheFile, $isDebug, $configFiles);
+    }
 
-        if ($this->checkExpired && !$this->cacheWatcher->isActual($fileCache, $configs)) {
-            return null;
-        }
+    protected function dumpCache(ResourceCheckerConfigCache $configCache, ContainerBuilder $container, bool $isDebug = false)
+    {
+        $phpDumper = new PhpDumper($container);
+        $dump = $phpDumper->dump([
+            'class' => $this->classContainer,
+            'debug' => $isDebug,
+        ]);
 
-        require_once $fileCache;
-        return new $this->classContainer;
+        $configCache->write($dump, $container->getResources());
     }
 }
