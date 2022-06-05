@@ -7,6 +7,8 @@ use Exception;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\Config\Resource\ComposerResource;
+use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -41,8 +43,19 @@ class FactoryContainer implements FactoryContainerInterface
         }
 
         $builder->compile(true);
+
+        $this->addVendorsResources($builder);
         $this->resetLoaders();
+
         return $builder;
+    }
+
+    protected function addVendorsResources(ContainerBuilder $builder): void
+    {
+        $vendors = (new ComposerResource)->getVendors();
+        foreach ($vendors as $vendor) {
+            $builder->addResource(new FileResource($vendor . '/composer/installed.json'));
+        }
     }
 
     protected function resetLoaders(): void
