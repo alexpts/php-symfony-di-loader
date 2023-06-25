@@ -27,7 +27,7 @@ jobs:
           configuration: test/phpunit.xml
           php_extensions: pcov
           php_version: ${{ matrix.php-versions }}
-          version: 9.5
+          version: 10.2
 
       - name: coverage monitor
         uses: slavcodev/coverage-monitor-action@1.6.0

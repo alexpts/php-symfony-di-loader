@@ -8,7 +8,6 @@ return function(ContainerConfigurator $configurator) {
     $configurator->parameters()
         ->set('php', 'php');
 
-
     $services = $configurator->services()
         ->defaults()
         ->autowire(true)

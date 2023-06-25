@@ -2,11 +2,9 @@
 <phpunit
         bootstrap="./../vendor/autoload.php"
         colors="true"
+        cacheDirectory=".phpunit.cache"
 >
-    <coverage processUncoveredFiles="true">
-        <include>
-            <directory suffix=".php">../src/</directory>
-        </include>
+    <coverage>
         <report>
             <clover outputFile="clover.xml"/>
         </report>
@@ -17,4 +15,10 @@
             <directory>./unit</directory>
         </testsuite>
     </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">../src/</directory>
+        </include>
+    </source>
 </phpunit>
